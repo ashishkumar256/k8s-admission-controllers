@@ -1,0 +1,19 @@
+# General Configuration
+namespace: webhook
+app:
+  name: pod-label-webhook
+  image: <image:tag> 
+  replicaCount: 1
+
+# Service Configuration
+service:
+  port: 443
+
+# Mutating Webhook Configuration
+webhook:
+  path: "/mutate"
+  rules:
+    apiGroups: ["*"]
+    apiVersions: ["v1"]
+    resources: ["pods"]
+    operations: ["CREATE"]

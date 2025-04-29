@@ -1,0 +1,19 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: {{ .Values.app.name }}
+webhooks:
+  - name: {{ .Values.app.name }}.{{ .Values.namespace }}.svc
+    clientConfig:
+      service:
+        name: {{ .Values.app.name }}
+        namespace: {{ .Values.namespace }}
+        path: {{ .Values.webhook.path }}
+      caBundle: {{ .Files.Get "certs/webhook.crt" | b64enc | quote }}
+    rules:
+      - operations: {{ .Values.webhook.rules.operations }}
+        apiGroups: {{ .Values.webhook.rules.apiGroups | toJson }}
+        apiVersions: {{ .Values.webhook.rules.apiVersions }}
+        resources: {{ .Values.webhook.rules.resources }}
+    admissionReviewVersions: ["v1"]
+    sideEffects: None
