@@ -1,17 +1,17 @@
 # General Configuration
 namespace: webhook
 app:
-  name: mutate-monitoring-label
-  image: <image:tag> 
+  name: validate-app-label 
+  image: <image:tag>
   replicaCount: 1
 
 # Service Configuration
 service:
   port: 443
 
-# Mutating Webhook Configuration
+# Validating Webhook Configuration
 webhook:
-  path: "/mutate"
+  path: "/validate"
   rules:
     apiGroups: ["*"]
     apiVersions: ["v1"]
