@@ -5,6 +5,8 @@ metadata:
   # annotations:
   #   "helm.sh/hook": post-install,post-upgrade
   #   "helm.sh/hook-weight": "1"
+  labels:
+    avoid-circular-dependency: enabled
 webhooks:
   - name: {{ .Values.app.name }}.{{ .Values.namespace }}.svc
     clientConfig:
