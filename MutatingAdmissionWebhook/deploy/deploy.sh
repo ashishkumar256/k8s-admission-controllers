@@ -33,9 +33,7 @@ kubectl apply -f - <<EOF
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: poc
-  labels:
-    sidecar: enabled
+  name: webhook
 EOF
 
 # check diff
@@ -45,3 +43,12 @@ EOF
 helm -n webhook upgrade --install mutating-webhook --set app.image=ashishkumar256/mutating-webhook:1 chart
 
 # Note: Image was created while doing activity, you may use it - "ashishkumar256/mutate-webhook:1"
+
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: poc
+  labels:
+    sidecar: enabled
+EOF
