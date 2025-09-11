@@ -14,9 +14,9 @@ def validate():
     labels = metadata.get("labels", {})
 
     try:
-        # Validation logic: Ensure the "app" label is present
-        if "app" not in labels:
-            return admission_response(request_uid, False, "Missing required label: 'app'")
+        # Validation logic: Ensure the "owner" label is present
+        if "owner" not in labels:
+            return admission_response(request_uid, False, "Missing required label: 'owner'")
         
         # If validation passes
         return admission_response(request_uid, True, "Validation successful")
