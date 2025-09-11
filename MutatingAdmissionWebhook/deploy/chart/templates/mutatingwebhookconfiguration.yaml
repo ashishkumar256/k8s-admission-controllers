@@ -22,6 +22,6 @@ webhooks:
     sideEffects: None
     namespaceSelector:
       matchExpressions:
-      - key: name
-        operator: NotIn
-        values: [{{ .Values.namespace }}]
+        - key: kubernetes.io/metadata.name
+          operator: NotIn
+          values: [{{ .Values.namespace }}]
