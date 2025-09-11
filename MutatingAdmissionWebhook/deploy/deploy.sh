@@ -37,7 +37,7 @@ metadata:
 EOF
 
 # check diff
-# helm -n webhook diff upgrade --install mutating-webhook --set app.image=ashishkumar256/mutating-webhook:1 chart
+helm -n webhook diff upgrade --install mutating-webhook --set app.image=ashishkumar256/mutating-webhook:1 chart
 
 # deploy
 helm -n webhook upgrade --install mutating-webhook --set app.image=ashishkumar256/mutating-webhook:1 chart

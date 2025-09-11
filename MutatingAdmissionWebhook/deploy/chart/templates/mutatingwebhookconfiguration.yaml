@@ -6,7 +6,7 @@ metadata:
   #   "helm.sh/hook": post-install,post-upgrade
   #   "helm.sh/hook-weight": "1"
   labels:
-    avoid-circular-dependency: enabled
+    avoid-circular-dependency-sidecar-mutate-svc: enabled
 webhooks:
   - name: {{ .Values.app.name }}.{{ .Values.namespace }}.svc
     clientConfig:
@@ -24,9 +24,10 @@ webhooks:
     sideEffects: None
     namespaceSelector:
       matchExpressions:
+        # This step is to avoid this mutate svc for complete namespace
         # - key: kubernetes.io/metadata.name
         #   operator: NotIn
         #   values: [{{ .Values.namespace }}]
-        - key: avoid-circular-dependency
+        - key: avoid-circular-dependency-sidecar-mutate-svc
           operator: In
           values: ["enabled"]

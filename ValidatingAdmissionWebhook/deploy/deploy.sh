@@ -29,13 +29,10 @@ EOF
 openssl req -new -sha256 -nodes -out $CERT_DIR/webhook.csr -newkey rsa:2048 -keyout $CERT_DIR/webhook.key -config $CERT_DIR/webhook-csr.conf
 openssl x509 -req -in $CERT_DIR/webhook.csr -signkey $CERT_DIR/webhook.key -out $CERT_DIR/webhook.crt -days 365 -extensions req_ext -extfile $CERT_DIR/webhook-csr.conf
 
-# Install Helm chart
-cd chart
-
 # check diff
-helm -n webhook diff upgrade --install validating-webhook --set app.image=<image:tag> .
+helm -n webhook diff upgrade --install validating-webhook --set app.image=<image:tag> chart
 
 # deploy
-helm -n webhook upgrade --install validating-webhook --set app.image=<image:tag> .
+helm -n webhook upgrade --install validating-webhook --set app.image=<image:tag> chart
 
-Note: Image was created while doing activity, you may use it - "ashishkumar256/validate-webhook:latest"
+# Note: Image was created while doing activity, you may use it - "ashishkumar256/validate-webhook:1"
