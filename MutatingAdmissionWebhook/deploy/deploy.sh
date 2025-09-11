@@ -29,6 +29,14 @@ EOF
 openssl req -new -sha256 -nodes -out $CERT_DIR/webhook.csr -newkey rsa:2048 -keyout $CERT_DIR/webhook.key -config $CERT_DIR/webhook-csr.conf
 openssl x509 -req -in $CERT_DIR/webhook.csr -signkey $CERT_DIR/webhook.key -out $CERT_DIR/webhook.crt -days 365 -extensions req_ext -extfile $CERT_DIR/webhook-csr.conf
 
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: poc
+  labels:
+    sidecar: enabled
+EOF
 
 # check diff
 # helm -n webhook diff upgrade --install mutating-webhook --set app.image=ashishkumar256/mutating-webhook:1 chart
