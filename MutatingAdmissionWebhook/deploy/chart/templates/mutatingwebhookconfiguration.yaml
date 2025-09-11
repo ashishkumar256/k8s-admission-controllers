@@ -24,6 +24,9 @@ webhooks:
     sideEffects: None
     namespaceSelector:
       matchExpressions:
-        - key: kubernetes.io/metadata.name
-          operator: NotIn
-          values: [{{ .Values.namespace }}]
+        # - key: kubernetes.io/metadata.name
+        #   operator: NotIn
+        #   values: [{{ .Values.namespace }}]
+        - key: avoid-circular-dependency
+          operator: In
+          values: ["enabled"]
