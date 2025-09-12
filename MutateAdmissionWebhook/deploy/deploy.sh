@@ -36,6 +36,34 @@ metadata:
   name: webhook
 EOF
 
+# A ClusterRole that grants permission to 'get' and 'list' namespaces
+kubectl apply -f - <<EOF
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: default
+rules:
+- apiGroups: [""]
+  resources: ["namespaces"]
+  verbs: ["get", "list"]
+EOF
+
+# A ClusterRoleBinding that links the ClusterRole to the ServiceAccount
+kubectl apply -f - <<EOF
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: default
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: webhook
+roleRef:
+  kind: ClusterRole
+  name: default
+  apiGroup: rbac.authorization.k8s.io
+EOF
+
 # check diff
 helm -n webhook diff upgrade --install mutate-webhook --set app.image=<image:tag> chart
 
