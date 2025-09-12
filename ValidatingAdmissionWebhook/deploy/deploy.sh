@@ -29,6 +29,13 @@ EOF
 openssl req -new -sha256 -nodes -out $CERT_DIR/webhook.csr -newkey rsa:2048 -keyout $CERT_DIR/webhook.key -config $CERT_DIR/webhook-csr.conf
 openssl x509 -req -in $CERT_DIR/webhook.csr -signkey $CERT_DIR/webhook.key -out $CERT_DIR/webhook.crt -days 365 -extensions req_ext -extfile $CERT_DIR/webhook-csr.conf
 
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: webhook
+EOF
+
 # check diff
 helm -n webhook diff upgrade --install validating-webhook --set app.image=<image:tag> chart
 
@@ -36,3 +43,35 @@ helm -n webhook diff upgrade --install validating-webhook --set app.image=<image
 helm -n webhook upgrade --install validating-webhook --set app.image=<image:tag> chart
 
 # Note: Image was created while doing activity, you may use it - "ashishkumar256/validate-webhook:1"
+
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: poc
+EOF
+
+kubectl apply -f - <<EOF
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-deployment
+  namespace: poc
+  labels:
+    app: sample
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sample
+  template:
+    metadata:
+      labels:
+        app: sample
+    spec:
+      containers:
+        - name: sample-container
+          image: nginx:1.25
+          ports:
+            - containerPort: 80
+EOF
