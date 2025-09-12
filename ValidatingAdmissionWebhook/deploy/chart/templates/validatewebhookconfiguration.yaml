@@ -5,8 +5,8 @@ metadata:
   # annotations:
   #   "helm.sh/hook": post-install,post-upgrade
   #   "helm.sh/hook-weight": "1"
-  labels:
-    avoid-circular-dependency-owner-validate-svc: enabled
+  # labels:
+  #   avoid-circular-dependency-owner-validate-svc: enabled
 webhooks:
   - name: {{ .Values.app.name }}.{{ .Values.namespace }}.svc
     clientConfig:
@@ -24,6 +24,6 @@ webhooks:
     sideEffects: None
     objectSelector:
       matchExpressions:
-        - key: avoid-circular-dependency-owner-validate-svc
+        - key: app
           operator: NotIn
-          values: ["enabled"]
+          values: ["validate-owner-label"]
