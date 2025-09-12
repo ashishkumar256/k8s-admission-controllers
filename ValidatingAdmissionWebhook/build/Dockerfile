@@ -5,7 +5,7 @@ FROM python:3.9-slim
 RUN pip install flask
 
 # Copy application code
-COPY validation-webhook.py /app/validation-webhook.py
+COPY validate-webhook.py /app/validate-webhook.py
 
 # Create certs directory
 RUN mkdir /certs
@@ -15,4 +15,4 @@ WORKDIR /app
 EXPOSE 443
 
 # Start the webhook server
-CMD ["python", "validation-webhook.py"]
+CMD ["python", "validate-webhook.py"]
