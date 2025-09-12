@@ -5,15 +5,18 @@ metadata:
   namespace: {{ .Values.namespace }}
   labels:
     app: {{ .Values.app.name }}
+    owner: sre
 spec:
   replicas: {{ .Values.app.replicaCount }}
   selector:
     matchLabels:
       app: {{ .Values.app.name }}
+      owner: sre
   template:
     metadata:
       labels:
         app: {{ .Values.app.name }}
+        owner: sre
     spec:
       containers:
       - name: {{ .Values.app.name }}
