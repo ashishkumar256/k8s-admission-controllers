@@ -15,7 +15,7 @@ limitations under the License.
 */
 package main
 
-import "mutating-webhook/cmd"
+import "mutate-webhook/cmd"
 
 func main() {
 	cmd.Execute()

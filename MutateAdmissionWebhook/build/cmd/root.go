@@ -30,12 +30,12 @@ var (
 )
 
 var rootCmd = &cobra.Command{
-        Use:   "mutating-webhook",
-        Short: "Kubernetes mutating webhook example",
-        Long: `Example showing how to implement a basic mutating webhook in Kubernetes.
+        Use:   "mutate-webhook",
+        Short: "Kubernetes mutate webhook example",
+        Long: `Example showing how to implement a basic mutate webhook in Kubernetes.
 
 Example:
-$ mutating-webhook --tls-cert <tls_cert> --tls-key <tls_key> --port <port>`,
+$ mutate-webhook --tls-cert <tls_cert> --tls-key <tls_key> --port <port>`,
         Run: func(cmd *cobra.Command, args []string) {
                 if tlsCert == "" || tlsKey == "" {
                         fmt.Println("--tls-cert and --tls-key required")

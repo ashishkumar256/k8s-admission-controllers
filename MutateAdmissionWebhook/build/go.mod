@@ -1,4 +1,4 @@
-module mutating-webhook
+module mutate-webhook
 
 go 1.16
 

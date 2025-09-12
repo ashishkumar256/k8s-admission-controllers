@@ -55,7 +55,7 @@ kubectl apply -f - <<EOF
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: sample-deployment
+  name: sample-validate
   namespace: poc
   labels:
     app: sample
@@ -68,6 +68,34 @@ spec:
     metadata:
       labels:
         app: sample
+    spec:
+      containers:
+        - name: sample-container
+          image: nginx:1.25
+          ports:
+            - containerPort: 80
+EOF
+
+kubectl apply -f - <<EOF
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-validate-with-owner-label
+  namespace: poc
+  labels:
+    app: sample
+    owner: sre
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sample
+      owner: sre
+  template:
+    metadata:
+      labels:
+        app: sample
+        owner: sre
     spec:
       containers:
         - name: sample-container

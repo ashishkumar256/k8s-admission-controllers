@@ -9,7 +9,7 @@ app:
 service:
   port: 443
 
-# Mutating Webhook Configuration
+# Mutate Webhook Configuration
 webhook:
   path: "/mutate"
   rules:

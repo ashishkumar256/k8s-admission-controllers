@@ -37,12 +37,12 @@ metadata:
 EOF
 
 # check diff
-helm -n webhook diff upgrade --install mutating-webhook --set app.image=<image:tag> chart
+helm -n webhook diff upgrade --install mutate-webhook --set app.image=<image:tag> chart
 
 # deploy
-helm -n webhook upgrade --install mutating-webhook --set app.image=<image:tag> chart
+helm -n webhook upgrade --install mutate-webhook --set app.image=<image:tag> chart
 
-# Note: Image was created while doing activity, you may use it - "ashishkumar256/mutating-webhook:1"
+# Note: Image was created while doing activity, you may use it - "ashishkumar256/mutate-webhook:1"
 
 kubectl apply -f - <<EOF
 apiVersion: v1
@@ -52,3 +52,30 @@ metadata:
   labels:
     sidecar: enabled
 EOF
+
+
+kubectl apply -f - <<EOF
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-mutate
+  namespace: poc
+  labels:
+    app: sample
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sample
+  template:
+    metadata:
+      labels:
+        app: sample
+    spec:
+      containers:
+        - name: sample-container
+          image: nginx:1.25
+          ports:
+            - containerPort: 80
+EOF
+
