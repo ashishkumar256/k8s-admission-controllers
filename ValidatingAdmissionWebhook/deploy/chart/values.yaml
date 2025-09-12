@@ -1,7 +1,7 @@
 # General Configuration
 namespace: webhook
 app:
-  name: validate-app-label 
+  name: validate-owner-label
   image: <image:tag>
   replicaCount: 1
 

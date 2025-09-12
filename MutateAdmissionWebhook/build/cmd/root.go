@@ -1,6 +1,7 @@
 package cmd
 
 import (
+        "context"
         "crypto/tls"
         "encoding/json"
         "fmt"
@@ -16,6 +17,8 @@ import (
         metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
         "k8s.io/apimachinery/pkg/runtime"
         "k8s.io/apimachinery/pkg/runtime/serializer"
+        "k8s.io/client-go/kubernetes"
+        "k8s.io/client-go/rest"
 )
 
 var (
@@ -27,12 +30,12 @@ var (
 )
 
 var rootCmd = &cobra.Command{
-        Use:   "mutating-webhook",
-        Short: "Kubernetes mutating webhook example",
-        Long: `Example showing how to implement a basic mutating webhook in Kubernetes.
+        Use:   "mutate-webhook",
+        Short: "Kubernetes mutate webhook example",
+        Long: `Example showing how to implement a basic mutate webhook in Kubernetes.
 
 Example:
-$ mutating-webhook --tls-cert <tls_cert> --tls-key <tls_key> --port <port>`,
+$ mutate-webhook --tls-cert <tls_cert> --tls-key <tls_key> --port <port>`,
         Run: func(cmd *cobra.Command, args []string) {
                 if tlsCert == "" || tlsKey == "" {
                         fmt.Println("--tls-cert and --tls-key required")
@@ -42,8 +45,6 @@ $ mutating-webhook --tls-cert <tls_cert> --tls-key <tls_key> --port <port>`,
         },
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
         cobra.CheckErr(rootCmd.Execute())
 }
@@ -55,13 +56,10 @@ func init() {
 }
 
 func admissionReviewFromRequest(r *http.Request, deserializer runtime.Decoder) (*admissionv1.AdmissionReview, error) {
-        // Validate that the incoming content type is correct.
         if r.Header.Get("Content-Type") != "application/json" {
                 return nil, fmt.Errorf("expected application/json content-type")
         }
 
-        // Get the body data, which will be the AdmissionReview
-        // content for the request.
         var body []byte
         if r.Body != nil {
                 requestData, err := ioutil.ReadAll(r.Body)
@@ -71,7 +69,6 @@ func admissionReviewFromRequest(r *http.Request, deserializer runtime.Decoder) (
                 body = requestData
         }
 
-        // Decode the request body into
         admissionReviewRequest := &admissionv1.AdmissionReview{}
         if _, _, err := deserializer.Decode(body, nil, admissionReviewRequest); err != nil {
                 return nil, err
@@ -85,7 +82,6 @@ func mutatePod(w http.ResponseWriter, r *http.Request) {
 
         deserializer := codecs.UniversalDeserializer()
 
-        // Parse the AdmissionReview from the http request.
         admissionReviewRequest, err := admissionReviewFromRequest(r, deserializer)
         if err != nil {
                 msg := fmt.Sprintf("error getting admission review from request: %v", err)
@@ -95,9 +91,6 @@ func mutatePod(w http.ResponseWriter, r *http.Request) {
                 return
         }
 
-        // Do server-side validation that we are only dealing with a pod resource. This
-        // should also be part of the MutatingWebhookConfiguration in the cluster, but
-        // we should verify here before continuing.
         podResource := metav1.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}
         if admissionReviewRequest.Request.Resource != podResource {
                 msg := fmt.Sprintf("did not receive pod, got %s", admissionReviewRequest.Request.Resource.Resource)
@@ -107,7 +100,6 @@ func mutatePod(w http.ResponseWriter, r *http.Request) {
                 return
         }
 
-        // Decode the pod from the AdmissionReview.
         rawRequest := admissionReviewRequest.Request.Object.Raw
         pod := corev1.Pod{}
         if _, _, err := deserializer.Decode(rawRequest, nil, &pod); err != nil {
@@ -118,14 +110,44 @@ func mutatePod(w http.ResponseWriter, r *http.Request) {
                 return
         }
 
-        // Create a response that will add a label to the pod if it does
-        // not already have a label with the key of "monitoring". In this case
-        // it does not matter what the value is, as long as the key exists.
         admissionResponse := &admissionv1.AdmissionResponse{}
         var patch string
         patchType := v1.PatchTypeJSONPatch
-        if _, ok := pod.Labels["monitoring"]; !ok {
-                patch = `[{"op":"add","path":"/metadata/labels","value":{"monitoring":"disabled"}}]`
+
+        namespace := admissionReviewRequest.Request.Namespace
+        kubeconfig, err := rest.InClusterConfig()
+        if err != nil {
+                msg := fmt.Sprintf("error loading in-cluster config: %v", err)
+                logger.Printf(msg)
+                w.WriteHeader(500)
+                w.Write([]byte(msg))
+                return
+        }
+        clientset, err := kubernetes.NewForConfig(kubeconfig)
+        if err != nil {
+                msg := fmt.Sprintf("error creating clientset: %v", err)
+                logger.Printf(msg)
+                w.WriteHeader(500)
+                w.Write([]byte(msg))
+                return
+        }
+        ns, err := clientset.CoreV1().Namespaces().Get(context.TODO(), namespace, metav1.GetOptions{})
+        if err != nil {
+                msg := fmt.Sprintf("error getting namespace: %v", err)
+                logger.Printf(msg)
+                w.WriteHeader(500)
+                w.Write([]byte(msg))
+                return
+        }
+
+        if ns.Labels["sidecar"] == "enabled" {
+                sidecar := corev1.Container{
+                        Name:  "sidecar-container",
+                        Image: "busybox:latest",
+                        Args:  []string{"sleep", "3600"},
+                }
+                sidecarJSON, _ := json.Marshal(sidecar)
+                patch = fmt.Sprintf(`[{"op":"add","path":"/spec/containers/-","value":%s}]`, string(sidecarJSON))
         }
 
         admissionResponse.Allowed = true
@@ -134,7 +156,6 @@ func mutatePod(w http.ResponseWriter, r *http.Request) {
                 admissionResponse.Patch = []byte(patch)
         }
 
-        // Construct the response, which is just another AdmissionReview.
         var admissionReviewResponse admissionv1.AdmissionReview
         admissionReviewResponse.Response = admissionResponse
         admissionReviewResponse.SetGroupVersionKind(admissionReviewRequest.GroupVersionKind())

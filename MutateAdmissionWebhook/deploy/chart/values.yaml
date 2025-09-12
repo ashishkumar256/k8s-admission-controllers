@@ -1,7 +1,7 @@
 # General Configuration
 namespace: webhook
 app:
-  name: mutate-monitoring-label
+  name: mutate-sidecar-container
   image: <image:tag> 
   replicaCount: 1
 
@@ -9,7 +9,7 @@ app:
 service:
   port: 443
 
-# Mutating Webhook Configuration
+# Mutate Webhook Configuration
 webhook:
   path: "/mutate"
   rules:

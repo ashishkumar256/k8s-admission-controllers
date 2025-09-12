@@ -24,7 +24,7 @@ RUN go mod download
 COPY . .
 
 # Build the Go application
-RUN go build -o /app/bin/mutating-webhook
+RUN go build -o /app/bin/mutate-webhook
 
 # Runtime Stage
 # Use a minimal Alpine Linux base image
@@ -40,10 +40,10 @@ WORKDIR /app
 RUN mkdir -p /certs
 
 # Copy the binary from the builder stage
-COPY --from=build /app/bin/mutating-webhook /app/mutating-webhook
+COPY --from=build /app/bin/mutate-webhook /app/mutate-webhook
 
 # Expose the necessary port (if applicable)
 EXPOSE 8080
 
 # Set up the entrypoint with TLS arguments
-ENTRYPOINT ["/app/mutating-webhook", "--tls-cert", "/certs/tls.crt", "--tls-key", "/certs/tls.key"]
+ENTRYPOINT ["/app/mutate-webhook", "--tls-cert", "/certs/tls.crt", "--tls-key", "/certs/tls.key"]

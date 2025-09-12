@@ -18,12 +18,12 @@ ST = State
 L = Locality
 O = Organization
 OU = Unit
-CN = validate-owner-label.webhook.svc
+CN = mutate-sidecar-container.webhook.svc
 [ req_ext ]
 subjectAltName = @alt_names
 [ alt_names ]
-DNS.1 = validate-owner-label.webhook.svc
-DNS.2 = validate-owner-label.webhook.svc.cluster.local
+DNS.1 = mutate-sidecar-container.webhook.svc
+DNS.2 = mutate-sidecar-container.webhook.svc.cluster.local
 EOF
 
 openssl req -new -sha256 -nodes -out $CERT_DIR/webhook.csr -newkey rsa:2048 -keyout $CERT_DIR/webhook.key -config $CERT_DIR/webhook-csr.conf
@@ -36,51 +36,57 @@ metadata:
   name: webhook
 EOF
 
+# A ClusterRole that grants permission to 'get' and 'list' namespaces
+kubectl apply -f - <<EOF
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: default
+rules:
+- apiGroups: [""]
+  resources: ["namespaces"]
+  verbs: ["get", "list"]
+EOF
+
+# A ClusterRoleBinding that links the ClusterRole to the ServiceAccount
+kubectl apply -f - <<EOF
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: default
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: webhook
+roleRef:
+  kind: ClusterRole
+  name: default
+  apiGroup: rbac.authorization.k8s.io
+EOF
+
 # check diff
-helm -n webhook diff upgrade --install validating-webhook --set app.image=<image:tag> chart
+helm -n webhook diff upgrade --install mutate-webhook --set app.image=<image:tag> chart
 
 # deploy
-helm -n webhook upgrade --install validating-webhook --set app.image=<image:tag> chart
+helm -n webhook upgrade --install mutate-webhook --set app.image=<image:tag> chart
 
-# Note: Image was created while doing activity, you may use it - "ashishkumar256/validate-webhook:1"
+# Note: Image was created while doing activity, you may use it - "ashishkumar256/mutate-webhook:1"
 
 kubectl apply -f - <<EOF
 apiVersion: v1
 kind: Namespace
 metadata:
   name: poc
-EOF
-
-kubectl apply -f - <<EOF
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: sample-validate
-  namespace: poc
   labels:
-    app: sample
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: sample
-  template:
-    metadata:
-      labels:
-        app: sample
-    spec:
-      containers:
-        - name: sample-container
-          image: nginx:1.25
-          ports:
-            - containerPort: 80
+    sidecar: enabled
 EOF
+
 
 kubectl apply -f - <<EOF
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: sample-validate-with-owner-label
+  name: sample-mutate
   namespace: poc
   labels:
     app: sample
@@ -103,3 +109,4 @@ spec:
           ports:
             - containerPort: 80
 EOF
+
