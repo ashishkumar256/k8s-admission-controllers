@@ -22,12 +22,12 @@ webhooks:
         resources: {{ .Values.webhook.rules.resources }}
     admissionReviewVersions: ["v1"]
     sideEffects: None
-    namespaceSelector:
+    objectSelector:
       matchExpressions:
         # This step is to avoid this mutate svc for complete namespace
         # - key: kubernetes.io/metadata.name
         #   operator: NotIn
         #   values: [{{ .Values.namespace }}]
         - key: avoid-circular-dependency-sidecar-mutate-svc
-          operator: In
+          operator: NotIn
           values: ["enabled"]

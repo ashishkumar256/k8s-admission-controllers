@@ -22,8 +22,8 @@ webhooks:
         resources: {{ .Values.webhook.rules.resources }}
     admissionReviewVersions: ["v1"]
     sideEffects: None
-    namespaceSelector:
+    objectSelector:
       matchExpressions:
         - key: avoid-circular-dependency-owner-validate-svc
-          operator: In
+          operator: NotIn
           values: ["enabled"]
