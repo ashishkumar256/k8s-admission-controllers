@@ -62,15 +62,18 @@ metadata:
   namespace: poc
   labels:
     app: sample
+    owner: sre
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: sample
+      owner: sre
   template:
     metadata:
       labels:
         app: sample
+        owner: sre
     spec:
       containers:
         - name: sample-container
