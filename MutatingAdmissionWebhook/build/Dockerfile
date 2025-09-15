@@ -7,26 +7,21 @@ ARG ARCH
 ENV GOOS=linux \
     GOARCH=${ARCH}
 
-# Install necessary build tools
-RUN apk add --no-cache git
-
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy the Go module files into the container
+# Copy the project files
 COPY go.mod go.sum ./
+COPY main.go ./
+COPY cmd ./cmd
 
 # Download dependencies
 RUN go mod download
 
-# Copy the rest of the application code
-COPY . .
-
 # Build the Go application
-RUN go build -o /app/bin/mutate-webhook
+RUN go build -o /app/bin/mutate-webhook main.go
 
 # Runtime Stage
-# Use a minimal Alpine Linux base image
 FROM alpine:latest AS runtime
 
 # Install runtime dependencies
@@ -42,5 +37,6 @@ COPY --from=build /app/bin/mutate-webhook /app/mutate-webhook
 EXPOSE 443
 EXPOSE 8080
 
-# Set up the default entrypoint. Arguments will be passed from the Kubernetes manifest.
+# Set up the default entrypoint. It will try to run with certs.
+# The `CMD` is what can be overridden.
 ENTRYPOINT ["/app/mutate-webhook"]
