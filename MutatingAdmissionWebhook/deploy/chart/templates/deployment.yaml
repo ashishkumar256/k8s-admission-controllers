@@ -21,6 +21,7 @@ spec:
       containers:
       - name: {{ .Values.app.name }}
         image: {{ .Values.app.image }}
+        args: ["--tls-cert", "/certs/webhook.crt", "--tls-key", "/certs/webhook.key"]
         ports:
         - containerPort: {{ .Values.service.port }}
         volumeMounts:
