@@ -7,7 +7,6 @@ ARG ARCH
 ENV GOOS=linux \
     GOARCH=${ARCH}
 
-RUN echo ${ARCH}
 # Install necessary build tools
 RUN apk add --no-cache git
 
@@ -36,14 +35,12 @@ RUN apk add --no-cache ca-certificates
 # Set the working directory inside the container
 WORKDIR /app
 
-# Create a directory for TLS certificates
-RUN mkdir -p /certs
-
 # Copy the binary from the builder stage
 COPY --from=build /app/bin/mutate-webhook /app/mutate-webhook
 
-# Expose the necessary port (if applicable)
+# Expose both the HTTPS (443) and HTTP (8080) ports
+EXPOSE 443
 EXPOSE 8080
 
-# Set up the entrypoint with TLS arguments
-ENTRYPOINT ["/app/mutate-webhook", "--tls-cert", "/certs/tls.crt", "--tls-key", "/certs/tls.key"]
+# Set up the default entrypoint. Arguments will be passed from the Kubernetes manifest.
+ENTRYPOINT ["/app/mutate-webhook"]
