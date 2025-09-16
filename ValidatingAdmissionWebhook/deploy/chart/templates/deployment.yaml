@@ -15,7 +15,6 @@ spec:
       labels:
         app: {{ .Values.app.name }}
     spec:
-      serviceAccountName: {{ .Values.namespace }}
       containers:
       - name: {{ .Values.app.name }}
         image: {{ .Values.app.image }}

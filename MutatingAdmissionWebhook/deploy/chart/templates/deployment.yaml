@@ -18,7 +18,6 @@ spec:
         app: {{ .Values.app.name }}
         owner: sre
     spec:
-      serviceAccountName: {{ .Values.namespace }}
       containers:
       - name: {{ .Values.app.name }}
         image: {{ .Values.app.image }}
