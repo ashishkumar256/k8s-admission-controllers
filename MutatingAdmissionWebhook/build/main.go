@@ -141,7 +141,7 @@ func mutatePod(w http.ResponseWriter, r *http.Request) {
 		sidecar := corev1.Container{
 			Name:  "sidecar-container",
 			Image: "busybox:latest",
-			Args:  []string{"sleep", "3600"},
+			Args:  []string{"sleep", "infinity"},
 		}
 		sidecarJSON, _ := json.Marshal(sidecar)
 		patch = fmt.Sprintf(`[{"op":"add","path":"/spec/containers/-","value":%s}]`, string(sidecarJSON))

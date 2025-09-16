@@ -29,46 +29,46 @@ EOF
 openssl req -new -sha256 -nodes -out $CERT_DIR/webhook.csr -newkey rsa:2048 -keyout $CERT_DIR/webhook.key -config $CERT_DIR/webhook-csr.conf
 openssl x509 -req -in $CERT_DIR/webhook.csr -signkey $CERT_DIR/webhook.key -out $CERT_DIR/webhook.crt -days 365 -extensions req_ext -extfile $CERT_DIR/webhook-csr.conf
 
-kubectl apply -f - <<EOF
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: webhook
-EOF
+# kubectl apply -f - <<EOF
+# apiVersion: v1
+# kind: Namespace
+# metadata:
+#   name: webhook
+# EOF
 
-# A ClusterRole that grants permission to 'get' and 'list' namespaces
-kubectl apply -f - <<EOF
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: default
-rules:
-- apiGroups: [""]
-  resources: ["namespaces"]
-  verbs: ["get", "list"]
-EOF
+# # A ClusterRole that grants permission to 'get' and 'list' namespaces
+# kubectl apply -f - <<EOF
+# apiVersion: rbac.authorization.k8s.io/v1
+# kind: ClusterRole
+# metadata:
+#   name: default
+# rules:
+# - apiGroups: [""]
+#   resources: ["namespaces"]
+#   verbs: ["get", "list"]
+# EOF
 
-# A ClusterRoleBinding that links the ClusterRole to the ServiceAccount
-kubectl apply -f - <<EOF
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: default
-subjects:
-- kind: ServiceAccount
-  name: default
-  namespace: webhook
-roleRef:
-  kind: ClusterRole
-  name: default
-  apiGroup: rbac.authorization.k8s.io
-EOF
+# # A ClusterRoleBinding that links the ClusterRole to the ServiceAccount
+# kubectl apply -f - <<EOF
+# apiVersion: rbac.authorization.k8s.io/v1
+# kind: ClusterRoleBinding
+# metadata:
+#   name: default
+# subjects:
+# - kind: ServiceAccount
+#   name: default
+#   namespace: webhook
+# roleRef:
+#   kind: ClusterRole
+#   name: default
+#   apiGroup: rbac.authorization.k8s.io
+# EOF
 
 # check diff
 helm -n webhook diff upgrade --install mutate-webhook --set app.image=<image:tag> chart
 
 # deploy
-helm -n webhook upgrade --install mutate-webhook --set app.image=<image:tag> chart
+helm -n webhook upgrade --install mutate-webhook --set app.image=<image:tag> chart --create-namespace
 
 # Note: Image was created while doing activity, you may use it - "ashishkumar256/mutate-webhook:1"
 

@@ -29,18 +29,18 @@ EOF
 openssl req -new -sha256 -nodes -out $CERT_DIR/webhook.csr -newkey rsa:2048 -keyout $CERT_DIR/webhook.key -config $CERT_DIR/webhook-csr.conf
 openssl x509 -req -in $CERT_DIR/webhook.csr -signkey $CERT_DIR/webhook.key -out $CERT_DIR/webhook.crt -days 365 -extensions req_ext -extfile $CERT_DIR/webhook-csr.conf
 
-kubectl apply -f - <<EOF
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: webhook
-EOF
+# kubectl apply -f - <<EOF
+# apiVersion: v1
+# kind: Namespace
+# metadata:
+#   name: webhook
+# EOF
 
 # check diff
 helm -n webhook diff upgrade --install validating-webhook --set app.image=<image:tag> chart
 
 # deploy
-helm -n webhook upgrade --install validating-webhook --set app.image=<image:tag> chart
+helm -n webhook upgrade --install validating-webhook --set app.image=<image:tag> chart --create-namespace
 
 # Note: Image was created while doing activity, you may use it - "ashishkumar256/validate-webhook:1"
 
