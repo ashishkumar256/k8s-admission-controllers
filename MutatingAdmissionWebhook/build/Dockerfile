@@ -7,27 +7,16 @@ ARG ARCH
 ENV GOOS=linux \
     GOARCH=${ARCH}
 
-RUN echo ${ARCH}
-# Install necessary build tools
-RUN apk add --no-cache git
-
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy the Go module files into the container
-COPY go.mod go.sum ./
+# Copy the single Go file
+COPY main.go .
 
-# Download dependencies
-RUN go mod download
-
-# Copy the rest of the application code
-COPY . .
-
-# Build the Go application
-RUN go build -o /app/bin/mutate-webhook
+# Build the Go application, enabling Go modules and using the single file
+RUN go mod init my-project.dev/mutate-webhook && go mod tidy && go build -o /app/bin/mutate-webhook .
 
 # Runtime Stage
-# Use a minimal Alpine Linux base image
 FROM alpine:latest AS runtime
 
 # Install runtime dependencies
@@ -36,14 +25,13 @@ RUN apk add --no-cache ca-certificates
 # Set the working directory inside the container
 WORKDIR /app
 
-# Create a directory for TLS certificates
-RUN mkdir -p /certs
-
 # Copy the binary from the builder stage
 COPY --from=build /app/bin/mutate-webhook /app/mutate-webhook
 
-# Expose the necessary port (if applicable)
+# Expose both the HTTPS (443) and HTTP (8080) ports
+EXPOSE 443
 EXPOSE 8080
 
-# Set up the entrypoint with TLS arguments
-ENTRYPOINT ["/app/mutate-webhook", "--tls-cert", "/certs/tls.crt", "--tls-key", "/certs/tls.key"]
+# Set up the default entrypoint. It will try to run with certs.
+# The `CMD` is what can be overridden.
+ENTRYPOINT ["/app/mutate-webhook"]
