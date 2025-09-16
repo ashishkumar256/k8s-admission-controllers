@@ -14,7 +14,7 @@ WORKDIR /app
 COPY main.go .
 
 # Build the Go application, enabling Go modules and using the single file
-RUN go mod init my-project.dev/mutate-webhook && go mod tidy && go build -o /app/bin/mutate-webhook .
+RUN go mod init github.com/mutate-webhook && go mod tidy && go build -o /app/bin/mutate-webhook .
 
 # Runtime Stage
 FROM alpine:latest AS runtime
