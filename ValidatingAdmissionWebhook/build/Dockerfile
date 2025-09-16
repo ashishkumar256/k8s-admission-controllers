@@ -14,5 +14,9 @@ WORKDIR /app
 # Secure port
 EXPOSE 443
 
-# Start the webhook server
-CMD ["python", "validate-webhook.py"]
+# Set the entrypoint to the Python interpreter
+ENTRYPOINT ["python", "/app/validate-webhook.py"]
+
+# Set the default command arguments for the entrypoint
+# These arguments are passed to the python script
+CMD ["/certs/tls.crt", "/certs/tls.key"]
