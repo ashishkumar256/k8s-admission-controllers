@@ -18,6 +18,7 @@ spec:
       containers:
       - name: {{ .Values.app.name }}
         image: {{ .Values.app.image }}
+        args: ["/certs/tls.crt", "/certs/tls.key"]
         ports:
         - containerPort: {{ .Values.service.port }}
         volumeMounts:
